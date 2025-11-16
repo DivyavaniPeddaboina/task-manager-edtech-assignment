@@ -10,6 +10,7 @@ function SignupPage() {
     email: "",
     password: "",
     role: "",
+    teacherId: ""
     
   });
 
@@ -22,6 +23,7 @@ function SignupPage() {
       try {
         const res = await axios.get("http://localhost:5000/auth/teachers");
         setTeachers(res.data.teachers);
+        console.log("Teachers loaded:", teachers);
       } catch (err) {
         console.error(err);
       }

@@ -118,5 +118,15 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// ⭐ GET ALL TEACHERS (For student signup dropdown)
+router.get("/teachers", async (req, res) => {
+  try {
+    const teachers = await User.find({ role: "teacher" }).select("_id email role");
+    res.json({ success: true, teachers });
+  } catch (err) {
+    console.log("🔥 GET TEACHERS ERROR:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
 
 module.exports = router;
