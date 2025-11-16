@@ -4,7 +4,7 @@ const taskSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true   // who created the task
+    required: true
   },
   title: {
     type: String,

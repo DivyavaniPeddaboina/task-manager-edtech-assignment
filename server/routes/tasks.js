@@ -1,121 +1,87 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const auth = require('../middleware/auth');
-const Task = require('../models/Task');
-const User = require('../models/User');
-const Joi = require('joi');
+const Task = require("../models/Task");
+const auth = require("../middleware/auth");
 
-// Validation schema for creating/updating tasks
-const taskSchema = Joi.object({
-  title: Joi.string().required(),
-  description: Joi.string().allow(''),
-  dueDate: Joi.date().optional(),
-  progress: Joi.string().valid('not-started', 'in-progress', 'completed').optional()
-});
-
-
-// ⭐ GET ALL TASKS (Teacher/Student with role-based control)
-router.get('/', auth, async (req, res) => {
+// ⭐ CREATE TASK (Teacher or Student — each creates own tasks)
+router.post("/", auth, async (req, res) => {
   try {
-    const user = req.user;
-
-    // 🔹 If STUDENT → only see own tasks
-    if (user.role === 'student') {
-      const tasks = await Task.find({ userId: user._id }).sort({ createdAt: -1 });
-      return res.json({ success: true, tasks });
-    }
-
-    // 🔹 If TEACHER → see own tasks + tasks of assigned students
-    if (user.role === 'teacher') {
-      const students = await User.find({ teacherId: user._id }).select('_id');
-      const studentIds = students.map(s => s._id);
-
-      const tasks = await Task.find({
-        $or: [
-          { userId: user._id },         // teacher's own tasks
-          { userId: { $in: studentIds } } // student tasks
-        ]
-      }).sort({ createdAt: -1 });
-
-      return res.json({ success: true, tasks });
-    }
-
-  } catch (err) {
-    return res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
-
-
-// ⭐ CREATE TASK (Only the logged-in user)
-router.post('/', auth, async (req, res) => {
-  try {
-    const { error } = taskSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ success: false, message: error.details[0].message });
-    }
+    const { title, description, dueDate, progress } = req.body;
 
     const newTask = new Task({
-      ...req.body,
-      userId: req.user._id   // logged-in user owns the task
+      userId: req.user.id,
+      title,
+      description,
+      dueDate,
+      progress
     });
 
     await newTask.save();
 
-    return res.json({ success: true, task: newTask });
+    return res.json({
+      success: true,
+      message: "Task created successfully",
+      task: newTask
+    });
 
-  } catch (err) {
-    return res.status(500).json({ success: false, message: 'Server error' });
+  } catch (error) {
+    console.log("🔥 CREATE TASK ERROR:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
 
-// ⭐ UPDATE TASK (Only task owner can update)
-router.put('/:id', auth, async (req, res) => {
+// ⭐ GET ALL TASKS (Teacher or Student — sees own tasks)
+router.get("/", auth, async (req, res) => {
   try {
-    const taskId = req.params.id;
+    const tasks = await Task.find({ userId: req.user.id }).sort({ createdAt: -1 });
 
-    const task = await Task.findById(taskId);
-    if (!task) {
-      return res.status(404).json({ success: false, message: 'Task not found' });
-    }
+    res.json({ success: true, tasks });
 
-    // Permission check — ONLY owner can update
-    if (task.userId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: 'Not authorized to edit this task' });
-    }
-
-    // Update now
-    Object.assign(task, req.body);
-    await task.save();
-
-    return res.json({ success: true, task });
-
-  } catch (err) {
-    return res.status(500).json({ success: false, message: 'Server error' });
+  } catch (error) {
+    console.log("🔥 GET TASK ERROR:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
 
-// ⭐ DELETE TASK (Only task owner can delete)
-router.delete('/:id', auth, async (req, res) => {
+// ⭐ UPDATE TASK (Only owner can update)
+router.put("/:id", auth, async (req, res) => {
   try {
-    const taskId = req.params.id;
+    const updated = await Task.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.id },
+      req.body,
+      { new: true }
+    );
 
-    const task = await Task.findById(taskId);
-    if (!task) {
-      return res.status(404).json({ success: false, message: 'Task not found' });
-    }
+    if (!updated)
+      return res.status(404).json({ success: false, message: "Task not found" });
 
-    // Only owner can delete
-    if (task.userId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: 'Not authorized to delete this task' });
-    }
+    res.json({ success: true, message: "Task updated", task: updated });
 
-    await task.deleteOne();
-    return res.json({ success: true, message: 'Task deleted successfully' });
+  } catch (error) {
+    console.log("🔥 UPDATE TASK ERROR:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
 
-  } catch (err) {
-    return res.status(500).json({ success: false, message: 'Server error' });
+
+// ⭐ DELETE TASK (Only owner)
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    const deleted = await Task.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.user.id
+    });
+
+    if (!deleted)
+      return res.status(404).json({ success: false, message: "Task not found" });
+
+    res.json({ success: true, message: "Task deleted successfully" });
+
+  } catch (error) {
+    console.log("🔥 DELETE TASK ERROR:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
