@@ -6,7 +6,8 @@ import {
   FaTasks,
   FaSpinner,
   FaCheckCircle,
-  FaPowerOff
+  FaPowerOff,
+  FaPlus
 } from "react-icons/fa";
 
 function TeacherDashboard() {
@@ -14,7 +15,6 @@ function TeacherDashboard() {
 
   const [tasks, setTasks] = useState([]);
 
-  // Load all tasks created by this teacher
   useEffect(() => {
     const loadTasks = async () => {
       try {
@@ -38,29 +38,39 @@ function TeacherDashboard() {
   return (
     <div
       style={{
-        backgroundColor: "#FFF7F2",
         minHeight: "100vh",
-        padding: "25px",
+        padding: "40px",
+        background: "linear-gradient(to bottom right, #FDFBFF, #F5F8FF)",
+        animation: "fadeIn 0.8s ease"
       }}
     >
       {/* Top Header */}
       <div
         style={{
+          backgroundColor: "white",
+          padding: "20px 30px",
+          borderRadius: "14px",
+          boxShadow: "0px 6px 20px rgba(0,0,0,0.06)",
+          marginBottom: "30px",
           display: "flex",
           justifyContent: "space-between",
-          marginBottom: "25px",
-          alignItems: "center",
+          alignItems: "center"
         }}
       >
-        <h2 style={{ fontWeight: 700, color: "#333" }}>Teacher Dashboard</h2>
+        <div>
+          <h1 style={{ fontWeight: 700, color: "#333", letterSpacing: "0.5px" }}>
+            Teacher Dashboard
+          </h1>
+          <p style={{ margin: 0, color: "#666" }}>Welcome back!</p>
+        </div>
 
         <button
           onClick={logout}
           style={{
-            backgroundColor: "#EDE7FF",
-            border: "2px solid #D6D3E6",
+            backgroundColor: "#F2F4FF",
+            border: "2px solid #D6D8FA",
             borderRadius: "8px",
-            padding: "8px 16px",
+            padding: "8px 18px",
             fontWeight: 600,
             color: "#333",
             cursor: "pointer",
@@ -80,45 +90,68 @@ function TeacherDashboard() {
           display: "grid",
           gridTemplateColumns: "repeat(4, 1fr)",
           gap: "20px",
-          marginBottom: "25px",
+          marginBottom: "30px",
         }}
       >
         <StatsCard
           title="Total Tasks"
           count={tasks.length}
           icon={<FaClipboardList />}
-          bg="#EDE7FF"
+          bg="#EDEAFF"
         />
 
         <StatsCard
           title="Not Started"
           count={tasks.filter(t => t.progress === "not-started").length}
           icon={<FaTasks />}
-          bg="#FFEFE2"
+          bg="#FFF4DA"
         />
 
         <StatsCard
           title="In Progress"
           count={tasks.filter(t => t.progress === "in-progress").length}
           icon={<FaSpinner />}
-          bg="#E2F0FF"
+          bg="#E3F1FF"
         />
 
         <StatsCard
           title="Completed"
           count={tasks.filter(t => t.progress === "completed").length}
           icon={<FaCheckCircle />}
-          bg="#E8FFE7"
+          bg="#E4FFE7"
         />
       </div>
 
-      {/* Task Table Section */}
+      {/* Create Task Button */}
+      <div style={{ marginBottom: "20px", textAlign: "right" }}>
+        <button
+          style={{
+            backgroundColor: "#6B9EF8",
+            border: "none",
+            borderRadius: "8px",
+            padding: "10px 20px",
+            fontWeight: 600,
+            fontSize: "1rem",
+            color: "white",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            cursor: "pointer",
+          }}
+          onClick={() => navigate("/teacher/create-task")}
+        >
+          <FaPlus />
+          Create Task
+        </button>
+      </div>
+
+      {/* Task List */}
       <div
         style={{
           backgroundColor: "#FFFFFF",
-          padding: "20px",
+          padding: "25px",
           borderRadius: "16px",
-          boxShadow: "0px 6px 22px rgba(0,0,0,0.06)",
+          boxShadow: "0px 6px 22px rgba(0,0,0,0.08)",
           border: "2px solid #EEE",
         }}
       >
@@ -126,7 +159,6 @@ function TeacherDashboard() {
           All Assigned Tasks
         </h4>
 
-        {/* Task Table */}
         <TeacherTaskTable tasks={tasks} />
       </div>
     </div>
@@ -136,15 +168,26 @@ function TeacherDashboard() {
 export default TeacherDashboard;
 
 /* ---------------- STATS CARD COMPONENT ---------------- */
+
 function StatsCard({ title, count, icon, bg }) {
   return (
     <div
       style={{
         backgroundColor: bg,
         borderRadius: "16px",
-        padding: "18px",
-        boxShadow: "0px 6px 22px rgba(0,0,0,0.07)",
-        border: "2px solid rgba(0,0,0,0.06)",
+        padding: "20px",
+        boxShadow: "0px 4px 16px rgba(0,0,0,0.05)",
+        border: "1px solid rgba(0,0,0,0.05)",
+        transition: "transform 0.25s ease, box-shadow 0.25s ease",
+        cursor: "pointer",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "scale(1.04)";
+        e.currentTarget.style.boxShadow = "0px 8px 26px rgba(0,0,0,0.1)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "scale(1)";
+        e.currentTarget.style.boxShadow = "0px 4px 16px rgba(0,0,0,0.05)";
       }}
     >
       <div style={{ fontSize: "2rem", marginBottom: "10px" }}>{icon}</div>
@@ -155,10 +198,11 @@ function StatsCard({ title, count, icon, bg }) {
 }
 
 /* ---------------- TASK TABLE COMPONENT ---------------- */
+
 function TeacherTaskTable({ tasks }) {
   return (
-    <table className="table table-hover">
-      <thead>
+    <table className="table table-hover" style={{ borderRadius: "12px", overflow: "hidden" }}>
+      <thead style={{ backgroundColor: "#F4F6FF" }}>
         <tr>
           <th>Student</th>
           <th>Task</th>
@@ -168,8 +212,13 @@ function TeacherTaskTable({ tasks }) {
       </thead>
 
       <tbody>
-        {tasks.map((task) => (
-          <tr key={task._id}>
+        {tasks.map((task, index) => (
+          <tr
+            key={task._id}
+            style={{
+              backgroundColor: index % 2 === 0 ? "#FFFFFF" : "#F9FAFF",
+            }}
+          >
             <td>{task.userId}</td>
             <td>{task.title}</td>
             <td>{task.dueDate?.substring(0, 10)}</td>
@@ -180,8 +229,8 @@ function TeacherTaskTable({ tasks }) {
                     task.progress === "completed"
                       ? "#D4FFE0"
                       : task.progress === "in-progress"
-                      ? "#E8F2FF"
-                      : "#FFECE8",
+                        ? "#E8F2FF"
+                        : "#FFECE8",
                   padding: "6px 12px",
                   borderRadius: "12px",
                   fontWeight: 600,
