@@ -182,3 +182,18 @@ GET	/tasks	Get tasks based on role logic	Yes
 POST	/tasks	Create a new task	Yes
 PUT	/tasks/:id	Update task progress	Yes
 DELETE	/tasks/:id	Delete a task	Yes
+
+🖼 Screenshots
+<img width="1920" height="1080" alt="SignUp Page" src="https://github.com/user-attachments/assets/08c0b1ac-6bda-4a9a-a69b-c61705bd2ef7" />
+<img width="1920" height="1080" alt="Login Page" src="https://github.com/user-attachments/assets/8723ba41-4a81-4742-96a9-1a311b03b0b3" />
+<img width="1920" height="1080" alt="Teacher Dashboard" src="https://github.com/user-attachments/assets/caefacf5-20c9-436d-8484-422e14cdbb1b" />
+<img width="1920" height="1080" alt="Task Creation Form by Teacher" src="https://github.com/user-attachments/assets/02f70c76-fe7b-4657-9637-4d59cc1f190a" />
+<img width="1920" height="1080" alt="Updated Teacher Dashboard with tasks" src="https://github.com/user-attachments/assets/c023e6c1-b079-4719-997f-3c69535dfd99 " />
+<img width="1920" height="1080" alt="Student SignUp Page" src="https://github.com/user-attachments/assets/4e06b083-3e41-45ac-a905-a996b96345db" />
+<img width="1920" height="1080" alt="Student Login Page" src="https://github.com/user-attachments/assets/914a250a-3ab8-429d-a990-8bd6a575bd7a" />
+<img width="1920" height="1080" alt="Student Dashboard" src="https://github.com/user-attachments/assets/b2420266-357b-4da6-bf1e-0942bce16689" />
+
+🤖 AI Usage Declaration
+## AI Usage Statement
+I used AI tools (ChatGPT) for debugging support, UI improvements, and generating explanations.  
+All final code, logic, and implementation were understood and written by me.
