@@ -193,7 +193,26 @@ DELETE	/tasks/:id	Delete a task	Yes
 <img width="1920" height="1080" alt="Student Login Page" src="https://github.com/user-attachments/assets/914a250a-3ab8-429d-a990-8bd6a575bd7a" />
 <img width="1920" height="1080" alt="Student Dashboard" src="https://github.com/user-attachments/assets/b2420266-357b-4da6-bf1e-0942bce16689" />
 
+🎥 Video Walkthrough
+https://drive.google.com/file/d/1V2k3xJV2_IEooX-vsQ4k8iet0QBpH-7O/view?usp=sharing
+[Click here to watch]
+
 🤖 AI Usage Declaration
 ## AI Usage Statement
 I used AI tools (ChatGPT) for debugging support, UI improvements, and generating explanations.  
 All final code, logic, and implementation were understood and written by me.
+
+🐞 Known Issues
+UI can be further optimized for mobile view.
+- Additional validation can be added for form fields.
+- Task pagination not implemented (bonus feature).
+
+✨ Future Improvements
+
+Deploy frontend & backend (Render)
+
+Pagination for teacher tasks
+
+Overdue task filtering
+
+Attachments in tasks
