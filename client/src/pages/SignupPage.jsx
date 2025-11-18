@@ -7,25 +7,33 @@ function SignupPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
+    name: "",
     email: "",
     password: "",
     role: "",
     teacherId: ""
-    
   });
 
   const [teachers, setTeachers] = useState([]);
   const [error, setError] = useState("");
+  const [loadingTeachers, setLoadingTeachers] = useState(false);
 
-  // Load all teachers for student dropdown
+  // load teachers for dropdown
   useEffect(() => {
     const loadTeachers = async () => {
+      setLoadingTeachers(true);
       try {
         const res = await axios.get("http://localhost:5000/auth/teachers");
-        setTeachers(res.data.teachers);
-        console.log("Teachers loaded:", teachers);
+        if (res.data && res.data.teachers) {
+          setTeachers(res.data.teachers);
+        } else {
+          setTeachers([]);
+        }
       } catch (err) {
-        console.error(err);
+        console.error("Error loading teachers:", err);
+        setTeachers([]);
+      } finally {
+        setLoadingTeachers(false);
       }
     };
 
@@ -33,37 +41,40 @@ function SignupPage() {
   }, []);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
 
-  // Build correct signup payload
-  let data = {
-    email: form.email,
-    password: form.password,
-    role: form.role
-  };
+    // build payload including name and teacherId conditionally
+    const data = {
+      name: form.name,
+      email: form.email,
+      password: form.password,
+      role: form.role
+    };
 
-  // Only include teacherId when role = student
-  if (form.role === "student") {
-    data.teacherId = form.teacherId;
-  }
-
-  try {
-    const res = await axios.post("http://localhost:5000/auth/signup", data);
-
-    if (res.data.success) {
-      navigate("/");
-    } else {
-      setError("Signup failed");
+    if (form.role === "student") {
+      data.teacherId = form.teacherId;
     }
-  } catch (err) {
-    setError(err.response?.data?.message || "Signup failed");
-  }
-};
+
+    try {
+      const res = await axios.post("http://localhost:5000/auth/signup", data);
+
+      if (res.data && res.data.success) {
+        // Signup success -> go to login
+        navigate("/");
+      } else {
+        setError(res.data?.message || "Signup failed");
+      }
+    } catch (err) {
+      console.error("Signup error:", err);
+      setError(err.response?.data?.message || "Signup failed");
+    }
+  };
 
   return (
     <div
@@ -72,7 +83,7 @@ function SignupPage() {
         width: "100vw",
         height: "100vh",
         backgroundColor: "#FFF7F2",
-        padding: "20px",
+        padding: "20px"
       }}
     >
       <div
@@ -82,7 +93,7 @@ function SignupPage() {
           borderRadius: "20px",
           backgroundColor: "#EDE7FF",
           boxShadow: "0px 8px 28px rgba(0,0,0,0.09)",
-          border: "2px solid #D6D3E6",
+          border: "2px solid #D6D3E6"
         }}
       >
         {/* Title */}
@@ -97,6 +108,20 @@ function SignupPage() {
         {error && <p className="text-danger text-center">{error}</p>}
 
         <form onSubmit={handleSubmit}>
+          {/* Name */}
+          <div className="mb-4">
+            <label className="form-label fw-semibold">Name</label>
+            <input
+              type="text"
+              name="name"
+              className="form-control"
+              placeholder="Enter your name"
+              onChange={handleChange}
+              value={form.name}
+              required
+            />
+          </div>
+
           {/* Email */}
           <div className="mb-4">
             <label className="form-label fw-semibold">Email</label>
@@ -110,6 +135,7 @@ function SignupPage() {
                 className="form-control"
                 placeholder="Enter email"
                 onChange={handleChange}
+                value={form.email}
                 required
               />
             </div>
@@ -128,6 +154,7 @@ function SignupPage() {
                 className="form-control"
                 placeholder="Create password"
                 onChange={handleChange}
+                value={form.password}
                 required
               />
             </div>
@@ -141,6 +168,7 @@ function SignupPage() {
               name="role"
               required
               onChange={handleChange}
+              value={form.role}
             >
               <option value="">Choose role</option>
               <option value="teacher">teacher</option>
@@ -148,7 +176,7 @@ function SignupPage() {
             </select>
           </div>
 
-          {/* Teacher selection only for student */}
+          {/* Teacher selection only for students */}
           {form.role === "student" && (
             <div className="mb-4">
               <label className="form-label fw-semibold">Select Teacher</label>
@@ -157,13 +185,18 @@ function SignupPage() {
                 name="teacherId"
                 required
                 onChange={handleChange}
+                value={form.teacherId}
               >
                 <option value="">Choose teacher</option>
-                {teachers.map((t) => (
-                  <option key={t._id} value={t._id}>
-                    {t.email}
-                  </option>
-                ))}
+                {loadingTeachers ? (
+                  <option disabled>Loading teachers...</option>
+                ) : (
+                  teachers.map((t) => (
+                    <option key={t._id} value={t._id}>
+                      {t.name || t.email}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
           )}
@@ -177,7 +210,7 @@ function SignupPage() {
               fontSize: "1.1rem",
               fontWeight: 600,
               border: "none",
-              borderRadius: "8px",
+              borderRadius: "8px"
             }}
           >
             Signup
@@ -190,7 +223,7 @@ function SignupPage() {
               cursor: "pointer",
               color: "#444",
               fontSize: "0.95rem",
-              fontWeight: 500,
+              fontWeight: 500
             }}
             onMouseEnter={(e) => (e.target.style.textDecoration = "underline")}
             onMouseLeave={(e) => (e.target.style.textDecoration = "none")}

@@ -1,22 +1,30 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import {
-  FaClipboardList,
-  FaTasks,
-  FaSpinner,
-  FaCheckCircle,
-  FaPowerOff,
-  FaPlus
-} from "react-icons/fa";
+import { FaClipboardList, FaPowerOff, FaPlus } from "react-icons/fa";
 import CreateTaskModal from "../components/CreateTaskModal";
 
 function TeacherDashboard() {
   const navigate = useNavigate();
+
   const [tasks, setTasks] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [teacherName, setTeacherName] = useState("");
 
-  // Load all tasks created by this teacher
+  /* ---------- Load teacher info ---------- */
+  const loadTeacherInfo = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/auth/me", {
+        headers: { Authorization: localStorage.getItem("token") }
+      });
+
+      setTeacherName(res.data.user.name); // ⭐ Teacher Name
+    } catch (err) {
+      console.log("TEACHER INFO ERROR:", err);
+    }
+  };
+
+  /* ---------- Load teacher tasks ---------- */
   const loadTasks = async () => {
     try {
       const res = await axios.get("http://localhost:5000/tasks", {
@@ -29,6 +37,7 @@ function TeacherDashboard() {
   };
 
   useEffect(() => {
+    loadTeacherInfo();
     loadTasks();
   }, []);
 
@@ -48,15 +57,9 @@ function TeacherDashboard() {
         flexDirection: "column",
       }}
     >
-      {/* MAIN WRAPPER (Centers content, full width) */}
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "1400px",
-          margin: "0 auto",
-        }}
-      >
-        {/* Top Header */}
+      <div style={{ width: "100%", maxWidth: "1400px", margin: "0 auto" }}>
+        
+        {/* ---------- Header ---------- */}
         <div
           style={{
             display: "flex",
@@ -70,7 +73,7 @@ function TeacherDashboard() {
               Teacher Dashboard
             </h1>
             <p style={{ margin: 0, fontSize: "1rem", color: "#555" }}>
-              Welcome back!
+              Welcome back! {teacherName} {/* ⭐ Teacher Name */}
             </p>
           </div>
 
@@ -94,42 +97,25 @@ function TeacherDashboard() {
           </button>
         </div>
 
-        {/* Stats Section */}
+        {/* ---------- Stats Section (ONLY total tasks now) ---------- */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
+            gridTemplateColumns: "repeat(1, 1fr)",
             gap: "20px",
             marginBottom: "25px",
+            maxWidth: "300px",
           }}
         >
           <StatsCard
-            title="Total Tasks"
+            title="Total Tasks Created"
             count={tasks.length}
             icon={<FaClipboardList />}
             bg="#E4EBFF"
           />
-          <StatsCard
-            title="Not Started"
-            count={tasks.filter((t) => t.progress === "not-started").length}
-            icon={<FaTasks />}
-            bg="#FFF2D9"
-          />
-          <StatsCard
-            title="In Progress"
-            count={tasks.filter((t) => t.progress === "in-progress").length}
-            icon={<FaSpinner />}
-            bg="#E2F2FF"
-          />
-          <StatsCard
-            title="Completed"
-            count={tasks.filter((t) => t.progress === "completed").length}
-            icon={<FaCheckCircle />}
-            bg="#E3FFD9"
-          />
         </div>
 
-        {/* Create Task Button */}
+        {/* ---------- Create Task Button ---------- */}
         <button
           onClick={() => setShowModal(true)}
           style={{
@@ -150,7 +136,7 @@ function TeacherDashboard() {
           Create Task
         </button>
 
-        {/* Task Table */}
+        {/* ---------- Task Table ---------- */}
         <div
           style={{
             backgroundColor: "#FFFFFF",
@@ -161,14 +147,14 @@ function TeacherDashboard() {
           }}
         >
           <h3 style={{ fontWeight: 600, marginBottom: "20px" }}>
-            All Assigned Tasks
+            Your Assigned Tasks
           </h3>
 
           <TeacherTaskTable tasks={tasks} />
         </div>
       </div>
 
-      {/* Task Modal */}
+      {/* ---------- Task Modal ---------- */}
       {showModal && (
         <CreateTaskModal close={() => setShowModal(false)} refresh={loadTasks} />
       )}
@@ -178,6 +164,7 @@ function TeacherDashboard() {
 
 export default TeacherDashboard;
 
+/* ---------- StatsCard Component ---------- */
 function StatsCard({ title, count, icon, bg }) {
   return (
     <div
@@ -198,6 +185,7 @@ function StatsCard({ title, count, icon, bg }) {
   );
 }
 
+/* ---------- Task Table ---------- */
 function TeacherTaskTable({ tasks }) {
   return (
     <table className="table table-hover">
@@ -206,7 +194,6 @@ function TeacherTaskTable({ tasks }) {
           <th>Task</th>
           <th>Description</th>
           <th>Due Date</th>
-          <th>Progress</th>
         </tr>
       </thead>
 
@@ -216,24 +203,6 @@ function TeacherTaskTable({ tasks }) {
             <td>{task.title}</td>
             <td>{task.description}</td>
             <td>{task.dueDate?.substring(0, 10)}</td>
-            <td>
-              <span
-                style={{
-                  backgroundColor:
-                    task.progress === "completed"
-                      ? "#D4FFE0"
-                      : task.progress === "in-progress"
-                      ? "#E8F2FF"
-                      : "#FFECE8",
-                  padding: "6px 12px",
-                  borderRadius: "12px",
-                  fontWeight: 600,
-                  color: "#333",
-                }}
-              >
-                {task.progress}
-              </span>
-            </td>
           </tr>
         ))}
       </tbody>
