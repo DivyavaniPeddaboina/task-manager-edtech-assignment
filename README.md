@@ -80,21 +80,53 @@ JWT authentication
 Middleware-based role checks
 
 📂 Project Structure
+Root Folder
 task-manager-edtech-assignment/
 │
-├── client/                # React Frontend
-│   ├── src/
-│   │   ├── pages/
-│   │   ├── components/
-│   │   ├── services/
-│   │   └── App.jsx
-│   └── index.html
+├── client/        → React frontend
+├── server/        → Node.js + Express backend
+└── README.md
+
+Frontend(client/)
+client/
 │
-└── server/                # Node.js Backend
-    ├── models/            # User & Task schema
-    ├── routes/            # Auth & Tasks routes
-    ├── middleware/        # JWT auth middleware
-    └── index.js
+├── index.html
+├── package.json
+├── vite.config.js
+│
+└── src/
+    ├── main.jsx
+    ├── App.jsx
+    ├── index.css
+    │
+    ├── pages/
+    │   ├── LoginPage.jsx
+    │   ├── SignupPage.jsx
+    │   ├── TeacherDashboard.jsx
+    │   └── StudentDashboard.jsx
+    │
+    └── components/
+        └── CreateTaskModal.jsx
+
+Backend(server/)
+server/
+│
+├── server.js
+├── package.json
+│
+├── config/
+│   └── db.js
+│
+├── middleware/
+│   └── auth.js
+│
+├── models/
+│   ├── User.js
+│   └── Task.js
+│
+└── routes/
+    ├── auth.js
+    └── tasks.js
     
 🚀 Installation & Setup
  1. Clone Repository
@@ -172,16 +204,66 @@ Welcome back! {studentName}
 Your Teacher: {teacherName}
 📝 API Documentation (Summary)
 
-Method	Endpoint	Description	Auth
+1. POST /auth/signup
+Purpose: Register a new user
+Auth Required: No
+Request Body:
+name
+email
+password
+role ("teacher" or "student")
+teacherId (only if role = student)
+Response: User created + JWT token
 
-POST	/auth/signup	Register user	No
-POST	/auth/login	Login & receive JWT token	No
-GET	/auth/me	Get logged-in user + teacher info	Yes
-GET	/auth/teachers	Get all teachers	No
-GET	/tasks	Get tasks based on role logic	Yes
-POST	/tasks	Create a new task	Yes
-PUT	/tasks/:id	Update task progress	Yes
-DELETE	/tasks/:id	Delete a task	Yes
+2. POST /auth/login
+Purpose: Login and get JWT token
+Auth Required: No
+Request Body:
+email
+password
+Response: JWT token and user info
+
+3. GET /auth/me
+Purpose: Get logged-in user's details
+Auth Required: Yes
+Response: User data (name, email, role, teacherId)
+
+4. GET /auth/teachers
+Purpose: Fetch all users who are teachers
+Auth Required: No
+Response: List of teachers (name + email + id)
+
+5. GET /tasks
+Purpose: Get tasks based on user role
+Auth Required: Yes
+Logic:
+If teacher → return teacher’s own tasks
+If student → return tasks created by their assigned teacher
+
+Response: List of tasks
+6. POST /tasks
+Purpose: Create a new task
+Auth Required: Yes
+Only teachers create tasks
+Request Body:
+title
+description
+dueDate
+Response: Created task
+
+7. PUT /tasks/:id
+Purpose: Update task progress
+Auth Required: Yes
+Only students update progress
+Request Body:
+progress ("not-started", "in-progress", "completed")
+Response: Updated task
+
+8. DELETE /tasks/:id
+Purpose: Delete a task
+Auth Required: Yes
+Only the teacher who created the task can delete it
+Response: Task deleted
 
 🖼 Screenshots
 <img width="1920" height="1080" alt="SignUp Page" src="https://github.com/user-attachments/assets/08c0b1ac-6bda-4a9a-a69b-c61705bd2ef7" />
